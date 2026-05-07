@@ -1,35 +1,90 @@
-# v0-spotify2k-design
+# SpotifY2K
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+A nostalgic, retro-themed music application inspired by early 2000s hacker aesthetics. Experience what Spotify might have looked like if it were designed in 2001 by hackers.
 
-## Built with v0
+## Features
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+### Fake Desktop OS Environment
+- Matrix rain background animation with falling characters
+- Draggable and resizable translucent windows with chrome-style title bars
+- Windows 2000-style taskbar with system tray and clock
+- Desktop icons for launching applications
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_nTrNYJ60y85nns4GFXvxj40TZQa0)
+### Music Player
+- Album art area with embedded audio visualizer
+- Full playback controls with chrome metallic buttons
+- Progress bar and volume slider
+- Playlist view with track listing
+
+### Audio-Reactive Visualizers
+- Bar visualizer with neon gradient colors
+- Waveform oscilloscope display
+- Circular rotating visualizer
+- Real-time frequency and amplitude stats
+
+### AI DJ Voice Assistant (NEXUS-DJ)
+- Powered by ElevenLabs text-to-speech
+- Cyberpunk persona with glitchy animated avatar
+- Quick actions for station IDs, track intros, and commentary
+- Fake Y2K commercials and weather reports
+
+### Radio Host Mode
+- Automatic DJ announcements between tracks
+- Station IDs every few tracks
+- Visual indicator when DJ is speaking
+
+### Voice-Controlled Playback
+- Commands: play, pause, stop, next, previous, volume up/down
+- Optional "Hey DJ" wake word
+- Visual feedback for listening state
+
+### Terminal Window
+- Interactive command-line interface
+- Hacker-themed commands and easter eggs
+
+## Y2K Visual Effects
+- CRT scanline overlay
+- Neon glow text effects
+- Chrome/metallic button gradients
+- Translucent glass window effects
+- Matrix-themed color palette
+
+## Tech Stack
+
+- **Framework:** Next.js 16
+- **Styling:** Tailwind CSS 4
+- **UI Components:** shadcn/ui
+- **Text-to-Speech:** ElevenLabs API
+- **Voice Recognition:** Web Speech API
+
+## Environment Variables
+
+```env
+ELEVENLABS_API_KEY=your_api_key_here
+ELEVENLABS_VOICE_ID=optional_custom_voice_id
+```
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Run development server
 pnpm dev
+
+# Build for production
+pnpm build
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Built with v0
 
-## Learn More
+This project was built with [v0](https://v0.app).
 
-To learn more, take a look at the following resources:
+[Continue working on v0](https://v0.app/chat/projects/prj_nTrNYJ60y85nns4GFXvxj40TZQa0)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+## License
 
-<a href="https://v0.app/chat/api/kiro/clone/lassestilvang/v0-spotify2k-design" alt="Open in Kiro"><img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" /></a>
+MIT
