@@ -49,8 +49,8 @@ export function Desktop() {
     openWindows.includes(windowId) && !minimizedWindows.includes(windowId)
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-background crt-scanlines">
-      {/* Matrix Rain Background */}
+    <div className="relative h-screen w-screen overflow-hidden crt-scanlines">
+      {/* Matrix Rain Background - provides the background */}
       <MatrixRain />
 
       {/* Desktop Icons */}

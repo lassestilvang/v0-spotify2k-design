@@ -15,8 +15,8 @@ export function MatrixRain() {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
-      // Fill with dark background initially
-      ctx.fillStyle = "#0a0f19"
+      // Fill with pure black background initially
+      ctx.fillStyle = "#000000"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
     resizeCanvas()
@@ -28,8 +28,8 @@ export function MatrixRain() {
     const drops: number[] = Array(columns).fill(0).map(() => Math.random() * -100)
 
     const draw = () => {
-      // Semi-transparent black to create trail effect
-      ctx.fillStyle = "rgba(10, 15, 25, 0.08)"
+      // Semi-transparent pure black to create trail effect
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       ctx.font = `bold ${fontSize}px monospace`
@@ -85,7 +85,7 @@ export function MatrixRain() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 z-0"
-      style={{ background: "#0a0f19" }}
+      style={{ background: "#000000" }}
     />
   )
 }
