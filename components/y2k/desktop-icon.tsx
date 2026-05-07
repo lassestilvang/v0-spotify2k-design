@@ -1,9 +1,9 @@
 "use client"
 
-import { Music, Activity, Terminal, FileText } from "lucide-react"
+import { Music, Activity, Terminal, FileText, Radio } from "lucide-react"
 
 interface DesktopIconProps {
-  icon: "music" | "visualizer" | "terminal" | "about"
+  icon: "music" | "visualizer" | "terminal" | "about" | "radio"
   label: string
   onClick: () => void
 }
@@ -13,6 +13,7 @@ const iconComponents = {
   visualizer: Activity,
   terminal: Terminal,
   about: FileText,
+  radio: Radio,
 }
 
 export function DesktopIcon({ icon, label, onClick }: DesktopIconProps) {

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { DJProvider } from '@/lib/dj-context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -37,7 +38,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
       <body className="font-mono antialiased bg-background text-foreground min-h-screen">
-        {children}
+        <DJProvider>
+          {children}
+        </DJProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

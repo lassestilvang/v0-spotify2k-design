@@ -8,6 +8,7 @@ import { MusicPlayerWindow } from "./music-player-window"
 import { VisualizerWindow } from "./visualizer-window"
 import { TerminalWindow } from "./terminal-window"
 import { AboutWindow } from "./about-window"
+import { DJWindow } from "./dj-window"
 
 export function Desktop() {
   const [openWindows, setOpenWindows] = useState<string[]>(["player"])
@@ -75,6 +76,11 @@ export function Desktop() {
           label="About.txt"
           onClick={() => toggleWindow("about")}
         />
+        <DesktopIcon
+          icon="radio"
+          label="NEXUS-DJ"
+          onClick={() => toggleWindow("dj")}
+        />
       </div>
 
       {/* Windows */}
@@ -111,6 +117,16 @@ export function Desktop() {
           onClose={() => closeWindow("about")}
           onMinimize={() => minimizeWindow("about")}
           onFocus={() => bringToFront("about")}
+        />
+      )}
+
+      {isWindowOpen("dj") && (
+        <DJWindow
+          isOpen={true}
+          isActive={activeWindow === "dj"}
+          onClose={() => closeWindow("dj")}
+          onMinimize={() => minimizeWindow("dj")}
+          onFocus={() => bringToFront("dj")}
         />
       )}
 

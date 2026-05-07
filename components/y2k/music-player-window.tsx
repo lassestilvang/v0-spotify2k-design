@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Music, Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Repeat, Heart } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Music, Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Repeat, Heart, Radio, Mic } from "lucide-react"
 import { WindowFrame } from "./window-frame"
 import { AudioVisualizer } from "./audio-visualizer"
+import { VoiceControlPanel } from "./voice-control-panel"
+import { useDJ } from "@/lib/dj-context"
 
 interface MusicPlayerWindowProps {
   isActive: boolean
@@ -26,14 +28,54 @@ export function MusicPlayerWindow({ isActive, onClose, onMinimize, onFocus }: Mu
   const [currentTrack, setCurrentTrack] = useState(0)
   const [progress, setProgress] = useState(0)
   const [volume, setVolume] = useState(75)
+  const [showVoicePanel, setShowVoicePanel] = useState(false)
+  
+  const { isRadioMode, isSpeaking, announceTrackChange, playStationId } = useDJ()
+  const hasAnnouncedRef = useRef(false)
+  const trackCountRef = useRef(0)
 
+  // Progress simulation
   useEffect(() => {
-    if (!isPlaying) return
+    if (!isPlaying || isSpeaking) return
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 100 ? 0 : prev + 0.5))
     }, 100)
     return () => clearInterval(interval)
-  }, [isPlaying])
+  }, [isPlaying, isSpeaking])
+
+  // Radio host mode - announce track changes
+  useEffect(() => {
+    if (isRadioMode && isPlaying && !hasAnnouncedRef.current) {
+      hasAnnouncedRef.current = true
+      trackCountRef.current++
+      
+      // Play station ID every 3 tracks
+      if (trackCountRef.current % 3 === 0) {
+        playStationId()
+      } else {
+        announceTrackChange()
+      }
+    }
+  }, [currentTrack, isRadioMode, isPlaying, announceTrackChange, playStationId])
+
+  // Reset announcement flag when track changes
+  useEffect(() => {
+    hasAnnouncedRef.current = false
+  }, [currentTrack])
+
+  // Playback controls for voice commands
+  const handlePlay = useCallback(() => setIsPlaying(true), [])
+  const handlePause = useCallback(() => setIsPlaying(false), [])
+  const handleNext = useCallback(() => {
+    setCurrentTrack(prev => Math.min(mockPlaylist.length - 1, prev + 1))
+    setProgress(0)
+  }, [])
+  const handlePrevious = useCallback(() => {
+    setCurrentTrack(prev => Math.max(0, prev - 1))
+    setProgress(0)
+  }, [])
+  const handleVolumeUp = useCallback(() => setVolume(prev => Math.min(100, prev + 10)), [])
+  const handleVolumeDown = useCallback(() => setVolume(prev => Math.max(0, prev - 10)), [])
 
   const currentSong = mockPlaylist[currentTrack]
 
@@ -49,6 +91,40 @@ export function MusicPlayerWindow({ isActive, onClose, onMinimize, onFocus }: Mu
       defaultSize={{ width: 700, height: 500 }}
     >
       <div className="flex h-full flex-col bg-gradient-to-b from-background/50 to-background p-4">
+        {/* Radio Mode / Voice Control Header */}
+        {(isRadioMode || showVoicePanel) && (
+          <div className="mb-3 space-y-2">
+            {isRadioMode && (
+              <div className={`flex items-center justify-between px-3 py-2 rounded border ${
+                isSpeaking 
+                  ? "bg-red-500/20 border-red-500/50" 
+                  : "bg-primary/10 border-primary/30"
+              }`}>
+                <div className="flex items-center gap-2">
+                  <Radio className={`w-4 h-4 ${isSpeaking ? "text-red-500 animate-pulse" : "text-primary"}`} />
+                  <span className={`text-xs font-mono ${isSpeaking ? "text-red-500" : "text-primary"}`}>
+                    {isSpeaking ? "DJ SPEAKING..." : "RADIO HOST MODE ACTIVE"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded-full ${isSpeaking ? "bg-red-500 animate-pulse" : "bg-primary"}`} />
+                  <span className="text-[10px] font-mono text-muted-foreground">NEXUS-FM</span>
+                </div>
+              </div>
+            )}
+            {showVoicePanel && (
+              <VoiceControlPanel
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                onVolumeUp={handleVolumeUp}
+                onVolumeDown={handleVolumeDown}
+              />
+            )}
+          </div>
+        )}
+
         {/* Now Playing Section */}
         <div className="flex gap-4 pb-4 border-b border-primary/20">
           {/* Album Art with Visualizer */}
@@ -99,29 +175,41 @@ export function MusicPlayerWindow({ isActive, onClose, onMinimize, onFocus }: Mu
             <Shuffle className="h-4 w-4 text-muted-foreground hover:text-primary" />
           </button>
           <button 
-            onClick={() => setCurrentTrack(Math.max(0, currentTrack - 1))}
+            onClick={handlePrevious}
             className="chrome-button p-2"
+            disabled={isSpeaking}
           >
-            <SkipBack className="h-5 w-5 text-foreground" />
+            <SkipBack className={`h-5 w-5 ${isSpeaking ? "text-muted-foreground" : "text-foreground"}`} />
           </button>
           <button 
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={() => isPlaying ? handlePause() : handlePlay()}
             className="chrome-button p-3 rounded-full"
+            disabled={isSpeaking}
           >
             {isPlaying ? (
-              <Pause className="h-6 w-6 text-primary" />
+              <Pause className={`h-6 w-6 ${isSpeaking ? "text-muted-foreground" : "text-primary"}`} />
             ) : (
-              <Play className="h-6 w-6 text-primary ml-0.5" />
+              <Play className={`h-6 w-6 ${isSpeaking ? "text-muted-foreground" : "text-primary"} ml-0.5`} />
             )}
           </button>
           <button 
-            onClick={() => setCurrentTrack(Math.min(mockPlaylist.length - 1, currentTrack + 1))}
+            onClick={handleNext}
             className="chrome-button p-2"
+            disabled={isSpeaking}
           >
-            <SkipForward className="h-5 w-5 text-foreground" />
+            <SkipForward className={`h-5 w-5 ${isSpeaking ? "text-muted-foreground" : "text-foreground"}`} />
           </button>
           <button className="p-2 hover:bg-primary/10 rounded transition-colors">
             <Repeat className="h-4 w-4 text-muted-foreground hover:text-primary" />
+          </button>
+          
+          {/* Voice Control Toggle */}
+          <button 
+            onClick={() => setShowVoicePanel(!showVoicePanel)}
+            className={`p-2 rounded transition-colors ${showVoicePanel ? "bg-primary/20 text-primary" : "hover:bg-primary/10"}`}
+            title="Voice Control"
+          >
+            <Mic className={`h-4 w-4 ${showVoicePanel ? "text-primary" : "text-muted-foreground hover:text-primary"}`} />
           </button>
 
           {/* Volume */}
@@ -189,9 +277,9 @@ export function MusicPlayerWindow({ isActive, onClose, onMinimize, onFocus }: Mu
 
         {/* Status Bar */}
         <div className="mt-2 pt-2 border-t border-primary/20 flex items-center justify-between text-xs text-muted-foreground font-mono">
-          <span>STATUS: {isPlaying ? "PLAYING" : "PAUSED"}</span>
-          <span>CODEC: MP3 320kbps</span>
-          <span>BUFFER: 100%</span>
+          <span>STATUS: {isSpeaking ? "DJ SPEAKING" : isPlaying ? "PLAYING" : "PAUSED"}</span>
+          <span>{isRadioMode ? "RADIO: ON" : "RADIO: OFF"}</span>
+          <span>VOL: {volume}%</span>
         </div>
       </div>
     </WindowFrame>
