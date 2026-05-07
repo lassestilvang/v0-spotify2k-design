@@ -116,7 +116,7 @@ export function WindowFrame({
     <div
       ref={windowRef}
       className={`absolute flex flex-col window-glass rounded-sm overflow-hidden transition-shadow ${
-        isActive ? "shadow-[0_0_30px_rgba(100,200,150,0.2)] z-40" : "opacity-90 z-30"
+        isActive ? "window-active z-40" : "opacity-85 z-30"
       }`}
       style={{
         left: position.x,
@@ -130,16 +130,16 @@ export function WindowFrame({
       <div
         className={`flex h-8 items-center justify-between px-2 cursor-move select-none border-b ${
           isActive
-            ? "bg-gradient-to-r from-primary/30 via-primary/20 to-primary/30 border-primary/40"
-            : "bg-muted/50 border-muted-foreground/20"
+            ? "bg-gradient-to-r from-primary/40 via-primary/25 to-primary/40 border-primary/50"
+            : "bg-muted/60 border-muted-foreground/30"
         }`}
         onMouseDown={handleTitleBarMouseDown}
       >
         <div className="flex items-center gap-2">
-          <div className={`${isActive ? "text-primary" : "text-muted-foreground"}`}>
+          <div className={`${isActive ? "text-primary glow-green" : "text-muted-foreground"}`}>
             {icon}
           </div>
-          <span className={`text-xs font-mono tracking-wider ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+          <span className={`text-sm font-mono tracking-wider ${isActive ? "text-primary glow-green" : "text-muted-foreground"}`}>
             {title}
           </span>
         </div>

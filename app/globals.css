@@ -16,9 +16,9 @@
   --popover: oklch(0.10 0.012 180);
   --popover-foreground: oklch(0.92 0.02 145);
   
-  /* Primary - Cyber green (Matrix inspired) */
-  --primary: oklch(0.75 0.18 145);
-  --primary-foreground: oklch(0.08 0.01 180);
+  /* Primary - Cyber green (Matrix inspired) - BRIGHT */
+  --primary: oklch(0.80 0.25 145);
+  --primary-foreground: oklch(0.05 0.01 180);
   
   /* Secondary - Muted cyber */
   --secondary: oklch(0.18 0.02 180);
@@ -36,19 +36,19 @@
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.95 0.02 25);
   
-  /* Borders and inputs */
-  --border: oklch(0.25 0.03 145);
-  --input: oklch(0.15 0.02 180);
-  --ring: oklch(0.65 0.15 145);
+  /* Borders and inputs - with green tint */
+  --border: oklch(0.30 0.08 145);
+  --input: oklch(0.12 0.04 145);
+  --ring: oklch(0.75 0.22 145);
   
-  /* Y2K specific colors */
-  --cyber-green: oklch(0.75 0.22 145);
-  --cyber-green-glow: oklch(0.80 0.25 145);
-  --cyber-blue: oklch(0.65 0.18 220);
-  --cyber-pink: oklch(0.70 0.20 340);
-  --cyber-purple: oklch(0.55 0.22 300);
-  --matrix-green: oklch(0.70 0.25 140);
-  --terminal-green: oklch(0.65 0.20 145);
+  /* Y2K specific colors - BRIGHT NEON */
+  --cyber-green: oklch(0.85 0.30 145);
+  --cyber-green-glow: oklch(0.90 0.32 145);
+  --cyber-blue: oklch(0.70 0.22 210);
+  --cyber-pink: oklch(0.75 0.25 340);
+  --cyber-purple: oklch(0.60 0.25 300);
+  --matrix-green: oklch(0.82 0.30 142);
+  --terminal-green: oklch(0.80 0.28 145);
   
   /* Chrome metallic gradients */
   --chrome-light: oklch(0.85 0.02 180);
@@ -343,6 +343,25 @@
       2px 2px 4px oklch(0 0 0 / 0.5),
       inset 1px 1px 0 oklch(1 0 0 / 0.1);
     border: 1px solid var(--chrome-mid);
+  }
+  
+  /* Window glass effect - translucent with green tint */
+  .window-glass {
+    background: oklch(0.08 0.03 145 / 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid oklch(0.40 0.12 145 / 0.6);
+    box-shadow: 
+      0 0 20px oklch(0.80 0.25 145 / 0.15),
+      inset 0 0 30px oklch(0.80 0.25 145 / 0.05);
+  }
+  
+  /* Active window glow */
+  .window-active {
+    border-color: oklch(0.80 0.25 145 / 0.8);
+    box-shadow: 
+      0 0 30px oklch(0.80 0.25 145 / 0.25),
+      0 0 60px oklch(0.80 0.25 145 / 0.1),
+      inset 0 0 30px oklch(0.80 0.25 145 / 0.08);
   }
 }
 

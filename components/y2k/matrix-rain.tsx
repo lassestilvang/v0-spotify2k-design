@@ -28,7 +28,7 @@ export function MatrixRain() {
       ctx.fillStyle = "rgba(10, 15, 25, 0.05)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx.fillStyle = "#00ff6640"
+      ctx.fillStyle = "#00ff6660"
       ctx.font = `${fontSize}px monospace`
 
       for (let i = 0; i < drops.length; i++) {
@@ -36,14 +36,18 @@ export function MatrixRain() {
         const x = i * fontSize
         const y = drops[i] * fontSize
 
-        // Vary the green intensity
+        // Vary the green intensity - brighter for hacker aesthetic
         const intensity = Math.random()
-        if (intensity > 0.95) {
+        if (intensity > 0.92) {
           ctx.fillStyle = "#00ff66"
-        } else if (intensity > 0.8) {
-          ctx.fillStyle = "#00ff6680"
+          ctx.shadowColor = "#00ff66"
+          ctx.shadowBlur = 10
+        } else if (intensity > 0.75) {
+          ctx.fillStyle = "#00ff66aa"
+          ctx.shadowBlur = 0
         } else {
-          ctx.fillStyle = "#00ff6630"
+          ctx.fillStyle = "#00ff6650"
+          ctx.shadowBlur = 0
         }
 
         ctx.fillText(char, x, y)
@@ -66,7 +70,7 @@ export function MatrixRain() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 z-0 opacity-30"
+      className="absolute inset-0 z-0 opacity-60"
     />
   )
 }
