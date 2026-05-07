@@ -254,24 +254,40 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
     }
   }, [speak])
 
+  // Track if we've announced radio mode to prevent double announcements
+  const radioModeAnnouncedRef = useRef<boolean>(false)
+
   // Toggle radio mode
   const toggleRadioMode = useCallback(() => {
     setIsRadioMode(prev => {
       const newValue = !prev
-      if (newValue) {
-        // Stop any current speech first, then announce radio mode activation
-        stopSpeaking()
+      
+      if (newValue && !radioModeAnnouncedRef.current) {
+        // Stop any current speech first
+        speechQueueRef.current = []
+        isProcessingQueueRef.current = false
+        speakingLockRef.current = false
+        if (audioRef.current) {
+          audioRef.current.pause()
+          audioRef.current.currentTime = 0
+        }
+        
+        // Mark as announced to prevent double announcement
+        radioModeAnnouncedRef.current = true
+        
         // Small delay before announcing
         setTimeout(() => {
           speak(getRandomResponse(voiceResponses.radioMode))
         }, 150)
-      } else {
-        // Clear queue when turning off radio mode
+      } else if (!newValue) {
+        // Reset announcement flag and clear queue when turning off
+        radioModeAnnouncedRef.current = false
         speechQueueRef.current = []
       }
+      
       return newValue
     })
-  }, [speak, stopSpeaking])
+  }, [speak, cleanupAudio])
 
   return (
     <DJContext.Provider
