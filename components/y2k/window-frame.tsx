@@ -35,8 +35,28 @@ export function WindowFrame({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const windowRef = useRef<HTMLDivElement>(null)
 
+  // Prevent text selection during drag/resize operations
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.body.style.userSelect = "none"
+      document.body.style.webkitUserSelect = "none"
+      document.body.style.cursor = isResizing ? "se-resize" : "move"
+    } else {
+      document.body.style.userSelect = ""
+      document.body.style.webkitUserSelect = ""
+      document.body.style.cursor = ""
+    }
+
+    return () => {
+      document.body.style.userSelect = ""
+      document.body.style.webkitUserSelect = ""
+      document.body.style.cursor = ""
+    }
+  }, [isDragging, isResizing])
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault()
       if (isDragging) {
         setPosition({
           x: Math.max(0, e.clientX - dragOffset.x),
@@ -56,14 +76,23 @@ export function WindowFrame({
       setIsResizing(false)
     }
 
+    // Prevent selection during operations
+    const handleSelectStart = (e: Event) => {
+      if (isDragging || isResizing) {
+        e.preventDefault()
+      }
+    }
+
     if (isDragging || isResizing) {
       document.addEventListener("mousemove", handleMouseMove)
       document.addEventListener("mouseup", handleMouseUp)
+      document.addEventListener("selectstart", handleSelectStart)
     }
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("selectstart", handleSelectStart)
     }
   }, [isDragging, isResizing, dragOffset, position, minSize])
 
@@ -137,9 +166,17 @@ export function WindowFrame({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className={`flex-1 overflow-auto ${isResizing || isDragging ? "select-none pointer-events-none" : ""}`}>
         {children}
       </div>
+
+      {/* Overlay to prevent text selection during resize/drag */}
+      {(isResizing || isDragging) && (
+        <div 
+          className="absolute inset-0 z-50" 
+          style={{ cursor: isResizing ? "se-resize" : "move" }}
+        />
+      )}
 
       {/* Resize Handle */}
       <div
