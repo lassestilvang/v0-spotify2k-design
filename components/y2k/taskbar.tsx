@@ -81,7 +81,7 @@ export function Taskbar({ openWindows, activeWindow, minimizedWindows, onWindowC
             <Wifi className="h-3.5 w-3.5 text-primary" />
             <Volume2 className="h-3.5 w-3.5 text-primary" />
           </div>
-          <div className="flex items-center gap-1 text-xs font-mono text-primary">
+          <div className="flex items-center gap-1 text-xs font-mono text-primary glow-green">
             <span className="hidden sm:inline">SYS://</span>
             <span className="tabular-nums">{time}</span>
           </div>

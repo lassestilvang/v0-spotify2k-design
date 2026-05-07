@@ -15,47 +15,65 @@ export function MatrixRain() {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
+      // Fill with dark background initially
+      ctx.fillStyle = "#0a0f19"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
 
-    const characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    const fontSize = 14
+    const characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/\\{}[]|=+-*&^%$#@!?"
+    const fontSize = 16
     const columns = Math.floor(canvas.width / fontSize)
-    const drops: number[] = Array(columns).fill(1)
+    const drops: number[] = Array(columns).fill(0).map(() => Math.random() * -100)
 
     const draw = () => {
-      ctx.fillStyle = "rgba(10, 15, 25, 0.05)"
+      // Semi-transparent black to create trail effect
+      ctx.fillStyle = "rgba(10, 15, 25, 0.08)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx.fillStyle = "#00ff6640"
-      ctx.font = `${fontSize}px monospace`
+      ctx.font = `bold ${fontSize}px monospace`
 
       for (let i = 0; i < drops.length; i++) {
         const char = characters[Math.floor(Math.random() * characters.length)]
         const x = i * fontSize
         const y = drops[i] * fontSize
 
-        // Vary the green intensity
+        // Vary the green intensity - brighter for hacker aesthetic
         const intensity = Math.random()
-        if (intensity > 0.95) {
+        if (intensity > 0.90) {
+          // Brightest - leading character with glow
+          ctx.fillStyle = "#ffffff"
+          ctx.shadowColor = "#00ff66"
+          ctx.shadowBlur = 15
+        } else if (intensity > 0.70) {
+          // Bright green
           ctx.fillStyle = "#00ff66"
-        } else if (intensity > 0.8) {
-          ctx.fillStyle = "#00ff6680"
+          ctx.shadowColor = "#00ff66"
+          ctx.shadowBlur = 8
+        } else if (intensity > 0.40) {
+          // Medium green
+          ctx.fillStyle = "#00cc55"
+          ctx.shadowBlur = 0
         } else {
-          ctx.fillStyle = "#00ff6630"
+          // Dim green
+          ctx.fillStyle = "#008844"
+          ctx.shadowBlur = 0
         }
 
         ctx.fillText(char, x, y)
 
-        if (y > canvas.height && Math.random() > 0.975) {
+        // Reset shadow for next iteration
+        ctx.shadowBlur = 0
+
+        if (y > canvas.height && Math.random() > 0.98) {
           drops[i] = 0
         }
         drops[i]++
       }
     }
 
-    const interval = setInterval(draw, 50)
+    const interval = setInterval(draw, 45)
 
     return () => {
       clearInterval(interval)
@@ -66,7 +84,8 @@ export function MatrixRain() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 z-0 opacity-30"
+      className="fixed inset-0 z-0"
+      style={{ background: "#0a0f19" }}
     />
   )
 }
