@@ -49,6 +49,9 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
   
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioUrlRef = useRef<string | null>(null)
+  const speakingLockRef = useRef<boolean>(false)
+  const speechQueueRef = useRef<string[]>([])
+  const isProcessingQueueRef = useRef<boolean>(false)
 
   // Clean up audio URL
   const cleanupAudio = useCallback(() => {
@@ -58,8 +61,13 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Stop speaking
+  // Stop speaking and clear queue
   const stopSpeaking = useCallback(() => {
+    // Clear the queue
+    speechQueueRef.current = []
+    isProcessingQueueRef.current = false
+    speakingLockRef.current = false
+    
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.currentTime = 0
@@ -69,61 +77,120 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
     setDjStatus("idle")
   }, [cleanupAudio])
 
-  // Core speak function using ElevenLabs API
-  const speak = useCallback(async (text: string) => {
-    try {
-      setIsSpeaking(true)
-      setDjStatus("speaking")
-      setLastSpoken(text)
+  // Internal speak function - plays audio directly without queue
+  const speakInternal = useCallback(async (text: string): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        setIsSpeaking(true)
+        setDjStatus("speaking")
+        setLastSpoken(text)
+        speakingLockRef.current = true
 
-      const response = await fetch("/api/elevenlabs/speak", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-          voiceSettings: {
-            stability: 0.4,
-            similarity_boost: 0.8,
-            style: 0.6,
-            use_speaker_boost: true,
+        const response = await fetch("/api/elevenlabs/speak", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      })
+          body: JSON.stringify({
+            text,
+            voiceSettings: {
+              stability: 0.4,
+              similarity_boost: 0.8,
+              style: 0.6,
+              use_speaker_boost: true,
+            },
+          }),
+        })
 
-      if (!response.ok) {
-        throw new Error("Failed to generate speech")
-      }
+        if (!response.ok) {
+          throw new Error("Failed to generate speech")
+        }
 
-      const audioBlob = await response.blob()
-      cleanupAudio()
-      
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioUrlRef.current = audioUrl
+        const audioBlob = await response.blob()
+        cleanupAudio()
+        
+        const audioUrl = URL.createObjectURL(audioBlob)
+        audioUrlRef.current = audioUrl
 
-      const audio = new Audio(audioUrl)
-      audioRef.current = audio
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
 
-      audio.onended = () => {
+        audio.onended = () => {
+          setIsSpeaking(false)
+          setDjStatus("idle")
+          speakingLockRef.current = false
+          cleanupAudio()
+          resolve()
+        }
+
+        audio.onerror = () => {
+          setIsSpeaking(false)
+          setDjStatus("idle")
+          speakingLockRef.current = false
+          cleanupAudio()
+          reject(new Error("Audio playback error"))
+        }
+
+        await audio.play()
+      } catch (error) {
+        console.error("Speech error:", error)
         setIsSpeaking(false)
         setDjStatus("idle")
-        cleanupAudio()
+        speakingLockRef.current = false
+        reject(error)
       }
+    })
+  }, [cleanupAudio])
 
-      audio.onerror = () => {
-        setIsSpeaking(false)
-        setDjStatus("idle")
-        cleanupAudio()
+  // Process the speech queue
+  const processQueue = useCallback(async () => {
+    if (isProcessingQueueRef.current || speechQueueRef.current.length === 0) {
+      return
+    }
+
+    isProcessingQueueRef.current = true
+
+    while (speechQueueRef.current.length > 0) {
+      const text = speechQueueRef.current.shift()
+      if (text) {
+        try {
+          await speakInternal(text)
+          // Small pause between queued items
+          if (speechQueueRef.current.length > 0) {
+            await new Promise(resolve => setTimeout(resolve, 300))
+          }
+        } catch (error) {
+          console.error("Queue processing error:", error)
+        }
       }
+    }
 
-      await audio.play()
+    isProcessingQueueRef.current = false
+  }, [speakInternal])
+
+  // Core speak function - queues speech to prevent overlap
+  const speak = useCallback(async (text: string) => {
+    // If currently speaking, add to queue
+    if (speakingLockRef.current) {
+      speechQueueRef.current.push(text)
+      return
+    }
+
+    // If queue is being processed, add to queue
+    if (isProcessingQueueRef.current) {
+      speechQueueRef.current.push(text)
+      return
+    }
+
+    // Otherwise speak directly
+    try {
+      await speakInternal(text)
+      // Process any queued items
+      processQueue()
     } catch (error) {
       console.error("Speech error:", error)
-      setIsSpeaking(false)
-      setDjStatus("idle")
     }
-  }, [cleanupAudio])
+  }, [speakInternal, processQueue])
 
   // Speak a DJ script
   const speakScript = useCallback(async (script: DJScript) => {
@@ -161,15 +228,22 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
     await speak(news.text)
   }, [speak])
 
-  // Play a full radio segment
+  // Play a full radio segment - queues all segments
   const playRadioSegment = useCallback(async () => {
+    // Stop any current speech first
+    stopSpeaking()
+    
+    // Small delay to ensure cleanup
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
     const segment = getRadioSegment()
+    // Add all segments to queue
     for (const script of segment) {
-      await speak(script.text)
-      // Small pause between segments
-      await new Promise(resolve => setTimeout(resolve, 500))
+      speechQueueRef.current.push(script.text)
     }
-  }, [speak])
+    // Start processing
+    processQueue()
+  }, [stopSpeaking, processQueue])
 
   // Respond to voice command
   const respondToCommand = useCallback(async (command: keyof typeof voiceResponses) => {
@@ -185,12 +259,19 @@ export function DJProvider({ children }: { children: React.ReactNode }) {
     setIsRadioMode(prev => {
       const newValue = !prev
       if (newValue) {
-        // Announce radio mode activation
-        speak(getRandomResponse(voiceResponses.radioMode))
+        // Stop any current speech first, then announce radio mode activation
+        stopSpeaking()
+        // Small delay before announcing
+        setTimeout(() => {
+          speak(getRandomResponse(voiceResponses.radioMode))
+        }, 150)
+      } else {
+        // Clear queue when turning off radio mode
+        speechQueueRef.current = []
       }
       return newValue
     })
-  }, [speak])
+  }, [speak, stopSpeaking])
 
   return (
     <DJContext.Provider
